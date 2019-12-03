@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Event loop</title>
+
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/blood.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/monokai.css">
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section class="slide-1">
+                <h3>Event loop in JavaScript</h3>
+                <p class="autor">Created by Vova Serko</p>
+            </section>
+            <section class="slide-2">
+                <h5>asynchrony - main tool in JavaScript</h5>
+                <section>
+                    <img class="fragment visible current-fragment request-post image-request" src="./image/request.png" alt="request for server">
+                    <img class="fragment visible current-fragment user-indigination" src="./image/inhibitin.gif" alt="inhibiting interent">
+                </section>
+            </section>
+            <section class="slide-3">
+                <section class="image-event-loop">
+                    <h5>Basic structure Event loop</h5>
+                    <img src="./image/event-loop.png" alt="event-loop">
+                </section>
+                <section>
+                    <h5>Concept of event loop</h5>
+                    <ol>
+                        <li>While there are tasks: <br> execute them, starting with the oldest task.
+                        </li>
+                        <li>Sleep until a task appears, then go to 1</li>
+                    </ol>
+                </section>
+                <section class="macrotask">
+                    <h5>macrotask queue</h5>
+                    <img src="./image/macro.svg" alt="macrotask queue">
+                    <p class="fragment visible current-fragment>">"first <span>come</span> – first <span>served</span>"
+                    </p>
+                </section>
+            </section>
+            <section class="slide-4">
+                <h5>Simple example</h5>
+                <div class="simple-example">
+                    <pre>
+                    <code class="code-macrotask" data-trim>
+
+                        function main() { 
+                          console.log('A') 
+                          setTimeout(function exec() { 
+                          console.log('B')
+                          }, 0) 
+                          console.log('C') 
+                        } 
+                        
+                        main()
+                    </code>
+                </pre>
+                    <p class="fragment visible current-fragment>">
+                        result:<br> // A<br> // C<br> // B<br>
+                    </p>
+                </div>
+            </section>
+            <section class="example-macrotask">
+                <h5>Basic structure Event loop for example</h5>
+                <img class="example-event-loop" src="./image/code_example.png" alt="code example">
+            </section>
+            <section class="slide-5">
+                <section>
+                    <h5>Microtasks</h5>
+                </section>
+                <section>
+                    <p>Immediately after every macrotask, the engine executes all tasks from microtask queue, prior to running any other macrotasks or rendering or anything else.</p>
+                    <img class="fragment visible current-fragment>" src="./image/event-micro.svg" alt="microtask queue">
+                </section>
+            </section>
+            <section class="slide-6">
+                <h5>Simple example</h5>
+                <div class="example-microtask">
+                    <pre>
+                    <code data-trim>
+                        setTimeout(() => console.log("timeout"));
+                        Promise.resolve()
+                        .then(() => console.log("promise"));
+                        console.log("code");
+                    </code>
+                    </pre>
+                    <pre id="pre" class="fragment visible current-fragment">result: //code // promise // timeout</pre>
+                </div>
+            </section>
+            <section class="slide-7">
+                <h5>The more detailed algorithm of the event loop:</h5>
+                <ol>
+                    <li>Dequeue and run the oldest task from the macrotask queue.</li>
+                    <li>Execute all <q>microtasks:</q> <br> While the microtask queue is not empty: <br> Dequeue and run the oldest microtask.
+
+                    </li>
+                    <li>Render changes if any.</li>
+                    <li>If the macrotask queue is empty, wait till a macrotask appears.</li>
+                    <li>Go to step 1.</li>
+                </ol>
+            </section>
+            <section class="slide-8">
+                <h5>Thank you for your attention</h5>
+            </section>
+        </div>
+    </div>
+
+    <script src="js/reveal.js"></script>
+
+    <script>
+        // More info about config & dependencies:
+        // - https://github.com/hakimel/reveal.js#configuration
+        // - https://github.com/hakimel/reveal.js#dependencies
+        Reveal.initialize({
+            dependencies: [{
+                src: 'plugin/markdown/marked.js'
+            }, {
+                src: 'plugin/markdown/markdown.js'
+            }, {
+                src: 'plugin/notes/notes.js',
+                async: true
+            }, {
+                src: 'plugin/highlight/highlight.js',
+                async: true
+            }]
+        });
+    </script>
+</body>
+
+</html>
