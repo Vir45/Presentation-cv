@@ -1,0 +1,66 @@
+Event loop in JavaScript. 
+Slide 1 
+///////Each language has its own approach to parallel computation of data. So, for example, in "adult" languages like C++ it is implemented through passing this task into a separate thread or even a process which is executed on another machine.
+In JavaScript, this approach is possible because of the asynchronous nature.////////
+
+Slide 2
+////////////In JavaScript, asynchrony is the main tool. Now it is impossible to imagine the Internet, where all requests to the server would be sent with a reload of the page. On the contrary, we have come to a one-page web, where the client has to resolve the page addresses and display the corresponding content.
+Any data from the server is requested asynchronously: the request is sent (XMLHttpRequest or XHR), and the code does not wait for its return, continuing to run. When the server finally responds, the XHR object receives a notification of this and starts the callback function, which is passed to it before sending the request.
+If you have to wait for the request to arrive, JavaScript will stop accepting any events: the page will depend, and the user will break the mouse or keyboard with indignation. Since we want him to use the web application in peace, the request should be derived from the current execution context.
+The essence here lies in the language device. JavaScript is designed to communicate with the user, so that he could run several events at the same time. With the correct use of its tools, the execution of the code, which occurs sequentially in one thread, does not interfere with the reception of events and response to them - a person quietly works with the interface, without noticing lags, failures and hangs./////////////////
+
+Slide 3
+section 1
+//////////////////////////In order for this tricky process to work smoothly, JavaScript implemented a mechanism to manage the sequence of code execution. Since it is a single-threaded language, there was a need to "fit in" with the current execution context. This mechanism is called event loop. 
+Event loop regulates the sequence of context execution - stack. It is formed when the event occurs or when a function is called. Each time an event is triggered, the function to be executed when it appears is placed in the execution queue in the event loop, which sequentially executes the code it receives with each loop. At the same time, the function attached to the event is called the next function after the current execution context.//////////
+/////////The concept of event loop is very simple. There’s an endless loop, when JavaScript engine waits for tasks, executes them and then sleeps waiting for more tasks.
+The general algorithm of the engine:
+While there are tasks:
+execute them, starting with the oldest task.
+Sleep until a task appears, then go to 1.////////////////////////////////////////
+
+section 2
+////////////Tasks are set – the engine handles them – then waits for more tasks (while sleeping and consuming close to zero CPU).
+It may happen that a task comes while the engine is busy, then it’s enqueued.
+The tasks form a queue, so-called “macrotask queue” (v8 term):///////////
+//////////////////For instance, while the engine is busy executing a script, a user may move their mouse causing mousemove, and setTimeout may be due and so on, these tasks form a queue, as illustrated on the picture above.
+Tasks from the queue are processed on “first come – first served” basis. When the engine browser is done with the script, it handles mousemove event, then setTimeout handler, and so on./////////////////////////
+
+slide4
+/////////Here we can see the function main , which includes two console.log functions that output to console A and C. Between them is setTimeout which will be called to Console B after waiting 0 seconds.
+next section
+1. Calling the  function main will first put it on the stack (as the first item). Then the browser will put the first expression of the main function into the stack, which is console.log('A'). This expression is executed and removed from the stack when finished. The letter A is displayed in the console.
+2. The next expression (setTimeout() with exec() callback and a waiting time of 0 seconds) is placed on the call stack and execution begins. The setTimeout function uses the browser API to delay the call of the provided function. The frame element is removed from the stack immediately after the timer is passed to the browser API.
+3. console.log('C') is placed on the stack while the timer for exec() is running in the browser. In this particular case, since the waiting time is 0 seconds, the callback (exec() function) will be placed in the message queue as soon as the browser receives it (ideally).
+4. After the last expression of the main function is executed, the main element is removed from the call stack, leaving it empty. The call stack must be empty in order for the browser to place the message queue element in it. For this reason, even if setTimeout specifies a waiting time of 0 seconds, exec() is not executed until all the items in the call stack are executed.
+5. Now the function exec() is placed into the call stack and executed. The letter C is displayed in the console. //////////////
+
+slide5 
+//////////////////Along with macrotasks, described in this chapter, there exist microtasks, mentioned in the chapter Microtasks. Microtasks come solely from our code. They are usually created by promises: an execution of .then/catch/finally handler becomes a microtask. Microtasks are used “under the cover” of await as well, as it’s another form of promise handling.
+Immediately after every macrotask, the engine executes all tasks from microtask queue, prior to running any other macrotasks or rendering or anything else.//////////////////////////
+
+slaid6
+/////////////////For instance, take a look:
+What’s going to be the order here?
+
+1.code shows first, because it’s a regular synchronous call.
+2.promise shows second, because .then passes through the microtask queue, and runs after the current code.
+3.timeout shows last, because it’s a macrotask.
+All microtasks are completed before any other event handling or rendering or any other macrotask takes place.
+//////////////////////////////////
+slaid7
+//////////////////Summary
+The more detailed algorithm of the event loop (though still simplified compare to the specification):
+
+1.Dequeue and run the oldest task from the macrotask queue (e.g. “script”).
+2.Execute all microtasks:
+While the microtask queue is not empty:
+Dequeue and run the oldest microtask.
+3. Render changes if any.
+4. If the macrotask queue is empty, wait till a macrotask appears.
+5. Go to step 1.
+
+////////////////////////////
+slaid8
+Thank you for your attention
+
